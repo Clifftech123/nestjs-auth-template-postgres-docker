@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - "5444:5432"
+    environment:
+      POSTGRES_USER: nestauthUser
+      POSTGRES_PASSWORD: nestauthPassword
+      POSTGRES_DB: nestauthUser
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
