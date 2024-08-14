@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,36 +6,69 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class TodoService {
   constructor(private readonly prismaService: PrismaService) {}
-  create(createTodoDto: CreateTodoDto) {
-    return this.prismaService.todo.create({
-      data: {
-        ...createTodoDto,
-      },
-    });
+
+  async create(createTodoDto: CreateTodoDto) {
+    try {
+      return await this.prismaService.todo.create({
+        data: {
+          ...createTodoDto,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error creating todo');
+    }
   }
 
-  findAll() {
-    return this.prismaService.todo.findMany();
+  async findAll() {
+    try {
+      return await this.prismaService.todo.findMany();
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching todos');
+    }
   }
 
-  findOne(id: string) {
-    return this.prismaService.todo.findUnique({
-      where: { id },
-    });
+  async findOne(id: string) {
+    try {
+      const todo = await this.prismaService.todo.findUnique({
+        where: { id },
+      });
+      if (!todo) {
+        throw new NotFoundException('Todo not found');
+      }
+      return todo;
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching todo');
+    }
   }
 
-  update(id: string, updateTodoDto: UpdateTodoDto) {
-    return this.prismaService.todo.update({
-      where: { id: id },
-      data: {
-        ...updateTodoDto,
-      },
-    });
+  async update(id: string, updateTodoDto: UpdateTodoDto) {
+    try {
+      const todo = await this.prismaService.todo.update({
+        where: { id },
+        data: {
+          ...updateTodoDto,
+        },
+      });
+      if (!todo) {
+        throw new NotFoundException('Todo not found');
+      }
+      return todo;
+    } catch (error) {
+      throw new InternalServerErrorException('Error updating todo');
+    }
   }
 
-  remove(id: string) {
-    return this.prismaService.todo.delete({
-      where: { id },
-    });
+  async remove(id: string) {
+    try {
+      const todo = await this.prismaService.todo.delete({
+        where: { id },
+      });
+      if (!todo) {
+        throw new NotFoundException('Todo not found');
+      }
+      return todo;
+    } catch (error) {
+      throw new InternalServerErrorException('Error deleting todo');
+    }
   }
 }
